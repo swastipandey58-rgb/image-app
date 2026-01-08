@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroDuo Elite | Pro Compression</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #020617;
+            color: #f8fafc; 
+            overflow: hidden; 
+        }
+        
+        .studio-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            height: 620px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .duo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            width: 100%;
+            max-width: 1300px;
+            padding: 0 20px;
+        }
+
+        .input-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .input-box:focus { border-color: #3b82f6; ring: 1px solid #3b82f6; }
+
+        .btn-ratio {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+
+        .btn-ratio:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
+    </style>
+</head>
+<body class="h-screen flex flex-col items-center justify-center">
+
+    <header class="mb-8 text-center">
+        <h1 class="text-3xl font-bold tracking-tight mb-1">Elite<span class="text-blue-500 text-glow">Compress</span></h1>
+        <p class="text-slate-500 text-xs font-semibold tracking-widest uppercase">Precision Image Studio</p>
+    </header>
+
+    <div class="duo-grid">
+        
+        <div class="studio-card relative group" id="leftPanel">
+            <div id="uploadUI" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-500/5 transition-all" onclick="document.getElementById('fileInput').click()">
+                <div class="w-20 h-20 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="plus" class="text-blue-500 w-8 h-8"></i>
+                </div>
+                <h3 class="text-xl font-bold">Import Media</h3>
+                <p class="text-slate-500 text-sm mt-1">PNG, JPG, WebP, AVIF</p>
+            </div>
+
+            <div id="cropperUI" class="hidden w-full h-full">
+                <img id="imageTarget" class="max-w-full">
+                <button onclick="location.reload()" class="absolute top-4 right-4 z-50 bg-black/60 p-2 rounded-full hover:bg-red-500 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <input type="file" id="fileInput" class="hidden" accept="image/*">
+        </div>
+
+        <div class="studio-card p-8 flex flex-col">
+            <div class="space-y-6 flex-1">
+                
+                <section>
+                    <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Canvas Geometry</h4>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="changeRatio(1)" class="btn-ratio">1:1</button>
+                        <button onclick="changeRatio(1.77)" class="btn-ratio">16:9</button>
+                        <button onclick="changeRatio(0.66)" class="btn-ratio">2:3</button>
+                        <button onclick="changeRatio(NaN)" class="btn-ratio">Free</button>
+                    </div>
+                </section>
+
+                <section>
+                    <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Output Dimensions</h4>
+                    <div class="flex gap-3">
+                        <div class="flex-1">
+                            <input type="number" id="targetW" placeholder="Width (px)" class="input-box w-full">
+                        </div>
+                        <div class="flex-1">
+                            <input type="number" id="targetH" placeholder="Height (px)" class="input-box w-full">
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Format & Compression</h4>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <select id="format" class="input-box">
+                            <option value="image/jpeg">JPEG</option>
+                            <option value="image/png">PNG (Lossless)</option>
+                            <option value="image/webp">WEBP</option>
+                            <option value="image/avif">AVIF (Elite)</option>
+                        </select>
+                        <div class="flex gap-2">
+                            <input type="number" id="targetSize" placeholder="Limit" class="input-box w-full">
+                            <select id="unit" class="bg-transparent text-xs border-none outline-none text-blue-400 font-bold">
+                                <option value="KB">KB</option>
+                                <option value="MB">MB</option>
+                            </select>
+                        </div>
+                    </div>
+                    <label class="text-[10px] text-slate-500">Quality: <span id="qLab" class="text-blue-400">80%</span></label>
+                    <input type="range" id="quality" min="0.1" max="1" step="0.05" value="0.8" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500 mt-2">
+                </section>
+            </div>
+
+            <button id="exportBtn" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-xl shadow-blue-900/20">
+                <i data-lucide="download"></i> Process & Export
+            </button>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        let cropper;
+        const fileInput = document.getElementById('fileInput');
+        const uploadUI = document.getElementById('uploadUI');
+        const cropperUI = document.getElementById('cropperUI');
+        const imageTarget = document.getElementById('imageTarget');
+
+        fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            imageTarget.src = URL.createObjectURL(file);
+            uploadUI.classList.add('hidden');
+            cropperUI.classList.remove('hidden');
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(imageTarget, { viewMode: 2, autoCropArea: 1, background: false });
+        };
+
+        function changeRatio(r) { if(cropper) cropper.setAspectRatio(r); }
+
+        document.getElementById('quality').oninput = (e) => {
+            document.getElementById('qLab').innerText = Math.round(e.target.value * 100) + '%';
+        };
+
+        document.getElementById('exportBtn').onclick = () => {
+            if (!cropper) return;
+            const w = document.getElementById('targetW').value;
+            const h = document.getElementById('targetH').value;
+            const format = document.getElementById('format').value;
+            const quality = parseFloat(document.getElementById('quality').value);
+
+            const options = {};
+            if (w) options.width = parseInt(w);
+            if (h) options.height = parseInt(h);
+
+            cropper.getCroppedCanvas(options).toBlob((blob) => {
+                const link = document.createElement('a');
+                link.download = `elite_export.${format.split('/')[1]}`;
+                link.href = URL.createObjectURL(blob);
+                link.click();
+            }, format, quality);
+        };
+    </script>
+</body>
+</html>
